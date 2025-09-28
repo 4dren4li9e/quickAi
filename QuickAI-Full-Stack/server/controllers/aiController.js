@@ -32,7 +32,7 @@ export const generateArticle = async (req, res)=>{
             temperature: 0.7,
             max_tokens: length,
         });
-
+        console.log(response);
         const content = response.choices[0].message.content
 
         await sql` INSERT INTO creations (user_id, prompt, content, type) 
@@ -149,6 +149,9 @@ export const removeImageBackground = async (req, res)=>{
             ]
         })
 
+        // Clean up uploaded file after processing
+        fs.unlinkSync(image.path)
+
         await sql` INSERT INTO creations (user_id, prompt, content, type) 
         VALUES (${userId}, 'Remove background from image', ${secure_url}, 'image')`;
 
@@ -172,6 +175,9 @@ export const removeImageObject = async (req, res)=>{
         }
 
         const {public_id} = await cloudinary.uploader.upload(image.path)
+
+        // Clean up uploaded file after processing
+        fs.unlinkSync(image.path)
 
         const imageUrl = cloudinary.url(public_id, {
             transformation: [{effect: `gen_remove:${object}`}],
@@ -205,6 +211,9 @@ export const resumeReview = async (req, res)=>{
 
         const dataBuffer = fs.readFileSync(resume.path)
         const pdfData = await pdf(dataBuffer)
+
+        // Clean up uploaded file after processing
+        fs.unlinkSync(resume.path)
 
         const prompt = `Review the following resume and provide constructive feedback on its strengths, weaknesses, and areas for improvement. Resume Content:\n\n${pdfData.text}`
 
