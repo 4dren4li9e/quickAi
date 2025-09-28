@@ -37,7 +37,7 @@ export const toggleLikeCreation = async (req, res)=>{
             return res.json({ success: false, message: "Creation not found" })
         }
 
-        const currentLikes = creation.likes;
+        const currentLikes = creation.likes || [];
         const userIdStr = userId.toString();
         let updatedLikes;
         let message;
@@ -50,9 +50,8 @@ export const toggleLikeCreation = async (req, res)=>{
             message = 'Creation Liked'
         }
 
-        const formattedArray = `{${updatedLikes.join(',')}}`
-
-       await sql`UPDATE creations SET likes = ${formattedArray}::text[] WHERE id = ${id}`;
+        // Use proper PostgreSQL array formatting
+       await sql`UPDATE creations SET likes = ${updatedLikes} WHERE id = ${id}`;
 
         res.json({ success: true, message });
     } catch (error) {
